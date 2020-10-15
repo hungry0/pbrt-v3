@@ -44,10 +44,6 @@
 #include "accelerators/bvh.h"
 #include "cameras/perspective.h"
 #include "filters/box.h"
-#include "filters/gaussian.h"
-#include "filters/mitchell.h"
-#include "filters/sinc.h"
-#include "filters/triangle.h"
 #include "integrators/bdpt.h"
 #include "integrators/directlighting.h"
 #include "integrators/mlt.h"
@@ -825,14 +821,6 @@ std::unique_ptr<Filter> MakeFilter(const std::string &name,
     Filter *filter = nullptr;
     if (name == "box")
         filter = CreateBoxFilter(paramSet);
-    else if (name == "gaussian")
-        filter = CreateGaussianFilter(paramSet);
-    else if (name == "mitchell")
-        filter = CreateMitchellFilter(paramSet);
-    else if (name == "sinc")
-        filter = CreateSincFilter(paramSet);
-    else if (name == "triangle")
-        filter = CreateTriangleFilter(paramSet);
     else {
         Error("Filter \"%s\" unknown.", name.c_str());
         exit(1);

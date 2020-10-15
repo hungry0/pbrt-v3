@@ -14,6 +14,7 @@ pbrt学习记录
 - materials：plastic
 - media：homogeneous 真空
 - accelerators：bvh
+- filters：box
 
 
 
