@@ -45,13 +45,7 @@
 #include "cameras/perspective.h"
 #include "filters/box.h"
 #include "integrators/whitted.h"
-#include "lights/diffuse.h"
 #include "lights/distant.h"
-#include "lights/goniometric.h"
-#include "lights/infinite.h"
-#include "lights/point.h"
-#include "lights/projection.h"
-#include "lights/spot.h"
 #include "materials/plastic.h"
 #include "media/grid.h"
 #include "media/homogeneous.h"
@@ -564,40 +558,12 @@ std::shared_ptr<Light> MakeLight(const std::string &name,
                                  const Transform &light2world,
                                  const MediumInterface &mediumInterface) {
     std::shared_ptr<Light> light;
-    if (name == "point")
-        light =
-            CreatePointLight(light2world, mediumInterface.outside, paramSet);
-    else if (name == "spot")
-        light = CreateSpotLight(light2world, mediumInterface.outside, paramSet);
-    else if (name == "goniometric")
-        light = CreateGoniometricLight(light2world, mediumInterface.outside,
-                                       paramSet);
-    else if (name == "projection")
-        light = CreateProjectionLight(light2world, mediumInterface.outside,
-                                      paramSet);
-    else if (name == "distant")
+    if (name == "distant")
         light = CreateDistantLight(light2world, paramSet);
-    else if (name == "infinite" || name == "exinfinite")
-        light = CreateInfiniteLight(light2world, paramSet);
     else
         Warning("Light \"%s\" unknown.", name.c_str());
     paramSet.ReportUnused();
     return light;
-}
-
-std::shared_ptr<AreaLight> MakeAreaLight(const std::string &name,
-                                         const Transform &light2world,
-                                         const MediumInterface &mediumInterface,
-                                         const ParamSet &paramSet,
-                                         const std::shared_ptr<Shape> &shape) {
-    std::shared_ptr<AreaLight> area;
-    if (name == "area" || name == "diffuse")
-        area = CreateDiffuseAreaLight(light2world, mediumInterface.outside,
-                                      paramSet, shape);
-    else
-        Warning("Area light \"%s\" unknown.", name.c_str());
-    paramSet.ReportUnused();
-    return area;
 }
 
 std::shared_ptr<Primitive> MakeAccelerator(
@@ -1155,11 +1121,6 @@ void pbrtShape(const std::string &name, const ParamSet &params) {
         for (auto s : shapes) {
             // Possibly create area light for shape
             std::shared_ptr<AreaLight> area;
-            if (graphicsState.areaLight != "") {
-                area = MakeAreaLight(graphicsState.areaLight, curTransform[0],
-                                     mi, graphicsState.areaLightParams, s);
-                if (area) areaLights.push_back(area);
-            }
             prims.push_back(
                 std::make_shared<GeometricPrimitive>(s, mtl, area, mi));
         }
