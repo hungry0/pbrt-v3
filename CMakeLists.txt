@@ -544,25 +544,10 @@ ADD_SANITIZERS ( obj2pbrt )
 ADD_EXECUTABLE ( cyhair2pbrt src/tools/cyhair2pbrt.cpp )
 ADD_SANITIZERS ( cyhair2pbrt )
 
-# Unit test
-
-FILE ( GLOB PBRT_TEST_SOURCE
-  src/tests/*.cpp
-  src/tests/gtest/*.cc
-  )
-
-ADD_EXECUTABLE ( pbrt_test ${PBRT_TEST_SOURCE} )
-ADD_SANITIZERS ( pbrt_test )
-TARGET_COMPILE_FEATURES ( pbrt_test PRIVATE ${PBRT_CXX11_FEATURES} )
-TARGET_LINK_LIBRARIES ( pbrt_test ${ALL_PBRT_LIBS} )
-
-ADD_TEST ( pbrt_unit_test pbrt_test )
-
 # Installation
 
 INSTALL ( TARGETS
   pbrt_exe
-  bsdftest
   imgtool
   obj2pbrt
   cyhair2pbrt
