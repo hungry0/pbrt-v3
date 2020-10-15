@@ -11,6 +11,9 @@ pbrt学习记录
 - cameras ：perspective
 - shapes：sphere 和 trianglemesh
 - textures：checkerboard
+- materials：plastic
+- media：homogeneous 真空
+- accelerators：bvh
 
 
 
