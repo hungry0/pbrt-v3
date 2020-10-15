@@ -52,20 +52,7 @@
 #include "lights/point.h"
 #include "lights/projection.h"
 #include "lights/spot.h"
-#include "materials/disney.h"
-#include "materials/fourier.h"
-#include "materials/glass.h"
-#include "materials/hair.h"
-#include "materials/kdsubsurface.h"
-#include "materials/matte.h"
-#include "materials/metal.h"
-#include "materials/mirror.h"
-#include "materials/mixmat.h"
 #include "materials/plastic.h"
-#include "materials/substrate.h"
-#include "materials/subsurface.h"
-#include "materials/translucent.h"
-#include "materials/uber.h"
 #include "samplers/halton.h"
 #include "samplers/maxmin.h"
 #include "samplers/random.h"
@@ -191,7 +178,7 @@ struct GraphicsState {
           namedMaterials(std::make_shared<NamedMaterialMap>()) {
         ParamSet empty;
         TextureParams tp(empty, empty, *floatTextures, *spectrumTextures);
-        std::shared_ptr<Material> mtl(CreateMatteMaterial(tp));
+        std::shared_ptr<Material> mtl(CreatePlasticMaterial(tp)); //CreateMatteMaterial
         currentMaterial = std::make_shared<MaterialInstance>("matte", mtl, ParamSet());
     }
     std::shared_ptr<Material> GetMaterialForShape(const ParamSet &geomParams);
@@ -524,56 +511,11 @@ std::shared_ptr<Material> MakeMaterial(const std::string &name,
     Material *material = nullptr;
     if (name == "" || name == "none")
         return nullptr;
-    else if (name == "matte")
-        material = CreateMatteMaterial(mp);
     else if (name == "plastic")
         material = CreatePlasticMaterial(mp);
-    else if (name == "translucent")
-        material = CreateTranslucentMaterial(mp);
-    else if (name == "glass")
-        material = CreateGlassMaterial(mp);
-    else if (name == "mirror")
-        material = CreateMirrorMaterial(mp);
-    else if (name == "hair")
-        material = CreateHairMaterial(mp);
-    else if (name == "disney")
-        material = CreateDisneyMaterial(mp);
-    else if (name == "mix") {
-        std::string m1 = mp.FindString("namedmaterial1", "");
-        std::string m2 = mp.FindString("namedmaterial2", "");
-        std::shared_ptr<Material> mat1, mat2;
-        if (graphicsState.namedMaterials->find(m1) ==
-            graphicsState.namedMaterials->end()) {
-            Error("Named material \"%s\" undefined.  Using \"matte\"",
-                  m1.c_str());
-            mat1 = MakeMaterial("matte", mp);
-        } else
-            mat1 = (*graphicsState.namedMaterials)[m1]->material;
-
-        if (graphicsState.namedMaterials->find(m2) ==
-            graphicsState.namedMaterials->end()) {
-            Error("Named material \"%s\" undefined.  Using \"matte\"",
-                  m2.c_str());
-            mat2 = MakeMaterial("matte", mp);
-        } else
-            mat2 = (*graphicsState.namedMaterials)[m2]->material;
-
-        material = CreateMixMaterial(mp, mat1, mat2);
-    } else if (name == "metal")
-        material = CreateMetalMaterial(mp);
-    else if (name == "substrate")
-        material = CreateSubstrateMaterial(mp);
-    else if (name == "uber")
-        material = CreateUberMaterial(mp);
-    else if (name == "subsurface")
-        material = CreateSubsurfaceMaterial(mp);
-    else if (name == "kdsubsurface")
-        material = CreateKdSubsurfaceMaterial(mp);
-    else if (name == "fourier")
-        material = CreateFourierMaterial(mp);
     else {
         Warning("Material \"%s\" unknown. Using \"matte\".", name.c_str());
-        material = CreateMatteMaterial(mp);
+        material = CreatePlasticMaterial(mp); //CreateMatteMaterial
     }
 
     if ((name == "subsurface" || name == "kdsubsurface") &&
