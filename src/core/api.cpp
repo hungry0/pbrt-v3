@@ -44,13 +44,6 @@
 #include "accelerators/bvh.h"
 #include "cameras/perspective.h"
 #include "filters/box.h"
-#include "integrators/bdpt.h"
-#include "integrators/directlighting.h"
-#include "integrators/mlt.h"
-#include "integrators/ao.h"
-#include "integrators/path.h"
-#include "integrators/sppm.h"
-#include "integrators/volpath.h"
 #include "integrators/whitted.h"
 #include "lights/diffuse.h"
 #include "lights/distant.h"
@@ -1649,22 +1642,7 @@ Integrator *RenderOptions::MakeIntegrator() const {
     Integrator *integrator = nullptr;
     if (IntegratorName == "whitted")
         integrator = CreateWhittedIntegrator(IntegratorParams, sampler, camera);
-    else if (IntegratorName == "directlighting")
-        integrator =
-            CreateDirectLightingIntegrator(IntegratorParams, sampler, camera);
-    else if (IntegratorName == "path")
-        integrator = CreatePathIntegrator(IntegratorParams, sampler, camera);
-    else if (IntegratorName == "volpath")
-        integrator = CreateVolPathIntegrator(IntegratorParams, sampler, camera);
-    else if (IntegratorName == "bdpt") {
-        integrator = CreateBDPTIntegrator(IntegratorParams, sampler, camera);
-    } else if (IntegratorName == "mlt") {
-        integrator = CreateMLTIntegrator(IntegratorParams, camera);
-    } else if (IntegratorName == "ambientocclusion") {
-        integrator = CreateAOIntegrator(IntegratorParams, sampler, camera);
-    } else if (IntegratorName == "sppm") {
-        integrator = CreateSPPMIntegrator(IntegratorParams, camera);
-    } else {
+	else {
         Error("Integrator \"%s\" unknown.", IntegratorName.c_str());
         return nullptr;
     }
