@@ -531,16 +531,11 @@ ADD_SANITIZERS ( imgtool )
 TARGET_COMPILE_FEATURES ( imgtool PRIVATE ${PBRT_CXX11_FEATURES} )
 TARGET_LINK_LIBRARIES ( imgtool ${ALL_PBRT_LIBS} )
 
-ADD_EXECUTABLE ( obj2pbrt src/tools/obj2pbrt.cpp )
-TARGET_COMPILE_FEATURES ( obj2pbrt PRIVATE ${PBRT_CXX11_FEATURES} )
-ADD_SANITIZERS ( obj2pbrt )
-
 # Installation
 
 INSTALL ( TARGETS
   pbrt_exe
   imgtool
-  obj2pbrt
   DESTINATION
   bin
   )
