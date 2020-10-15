@@ -53,12 +53,7 @@
 #include "lights/projection.h"
 #include "lights/spot.h"
 #include "materials/plastic.h"
-#include "samplers/halton.h"
-#include "samplers/maxmin.h"
 #include "samplers/random.h"
-#include "samplers/sobol.h"
-#include "samplers/stratified.h"
-#include "samplers/zerotwosequence.h"
 #include "shapes/cone.h"
 #include "shapes/curve.h"
 #include "shapes/cylinder.h"
@@ -733,18 +728,8 @@ std::shared_ptr<Sampler> MakeSampler(const std::string &name,
                                      const ParamSet &paramSet,
                                      const Film *film) {
     Sampler *sampler = nullptr;
-    if (name == "lowdiscrepancy" || name == "02sequence")
-        sampler = CreateZeroTwoSequenceSampler(paramSet);
-    else if (name == "maxmindist")
-        sampler = CreateMaxMinDistSampler(paramSet);
-    else if (name == "halton")
-        sampler = CreateHaltonSampler(paramSet, film->GetSampleBounds());
-    else if (name == "sobol")
-        sampler = CreateSobolSampler(paramSet, film->GetSampleBounds());
-    else if (name == "random")
+    if (name == "random")
         sampler = CreateRandomSampler(paramSet);
-    else if (name == "stratified")
-        sampler = CreateStratifiedSampler(paramSet);
     else
         Warning("Sampler \"%s\" unknown.", name.c_str());
     paramSet.ReportUnused();
