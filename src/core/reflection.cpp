@@ -98,20 +98,6 @@ std::string FresnelDielectric::ToString() const {
     return StringPrintf("[ FrenselDielectric etaI: %f etaT: %f ]", etaI, etaT);
 }
 
-Spectrum SpecularReflection::Sample_f(const Vector3f &wo, Vector3f *wi,
-                                      const Point2f &sample, Float *pdf,
-                                      BxDFType *sampledType) const {
-    // Compute perfect specular reflection direction
-    *wi = Vector3f(-wo.x, -wo.y, wo.z);
-    *pdf = 1;
-    return fresnel->Evaluate(CosTheta(*wi)) * R / AbsCosTheta(*wi);
-}
-
-std::string SpecularReflection::ToString() const {
-    return std::string("[ SpecularReflection R: ") + R.ToString() +
-           std::string(" fresnel: ") + fresnel->ToString() + std::string(" ]");
-}
-
 Spectrum SpecularTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
                                         const Point2f &sample, Float *pdf,
                                         BxDFType *sampledType) const {

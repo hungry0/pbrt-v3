@@ -296,27 +296,6 @@ class FresnelNoOp : public Fresnel {
     std::string ToString() const { return "[ FresnelNoOp ]"; }
 };
 
-class SpecularReflection : public BxDF {
-  public:
-    // SpecularReflection Public Methods
-    SpecularReflection(const Spectrum &R, Fresnel *fresnel)
-        : BxDF(BxDFType(BSDF_REFLECTION | BSDF_SPECULAR)),
-          R(R),
-          fresnel(fresnel) {}
-    Spectrum f(const Vector3f &wo, const Vector3f &wi) const {
-        return Spectrum(0.f);
-    }
-    Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &sample,
-                      Float *pdf, BxDFType *sampledType) const;
-    Float Pdf(const Vector3f &wo, const Vector3f &wi) const { return 0; }
-    std::string ToString() const;
-
-  private:
-    // SpecularReflection Private Data
-    const Spectrum R;
-    const Fresnel *fresnel;
-};
-
 class SpecularTransmission : public BxDF {
   public:
     // SpecularTransmission Public Methods
