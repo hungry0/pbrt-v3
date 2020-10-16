@@ -490,25 +490,6 @@ class FresnelBlend : public BxDF {
     MicrofacetDistribution *distribution;
 };
 
-class FourierBSDF : public BxDF {
-  public:
-    // FourierBSDF Public Methods
-    Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
-    FourierBSDF(const FourierBSDFTable &bsdfTable, TransportMode mode)
-        : BxDF(BxDFType(BSDF_REFLECTION | BSDF_TRANSMISSION | BSDF_GLOSSY)),
-          bsdfTable(bsdfTable),
-          mode(mode) {}
-    Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &u,
-                      Float *pdf, BxDFType *sampledType) const;
-    Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
-    std::string ToString() const;
-
-  private:
-    // FourierBSDF Private Data
-    const FourierBSDFTable &bsdfTable;
-    const TransportMode mode;
-};
-
 // BSDF Inline Method Definitions
 inline int BSDF::NumComponents(BxDFType flags) const {
     int num = 0;
