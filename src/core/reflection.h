@@ -290,12 +290,6 @@ class FresnelDielectric : public Fresnel {
     Float etaI, etaT;
 };
 
-class FresnelNoOp : public Fresnel {
-  public:
-    Spectrum Evaluate(Float) const { return Spectrum(1.); }
-    std::string ToString() const { return "[ FresnelNoOp ]"; }
-};
-
 class SpecularTransmission : public BxDF {
   public:
     // SpecularTransmission Public Methods
