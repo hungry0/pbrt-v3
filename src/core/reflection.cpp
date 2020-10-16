@@ -127,44 +127,6 @@ std::string MicrofacetReflection::ToString() const {
            std::string(" fresnel: ") + fresnel->ToString() + std::string(" ]");
 }
 
-Spectrum MicrofacetTransmission::f(const Vector3f &wo,
-                                   const Vector3f &wi) const {
-    if (SameHemisphere(wo, wi)) return 0;  // transmission only
-
-    Float cosThetaO = CosTheta(wo);
-    Float cosThetaI = CosTheta(wi);
-    if (cosThetaI == 0 || cosThetaO == 0) return Spectrum(0);
-
-    // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
-    Float eta = CosTheta(wo) > 0 ? (etaB / etaA) : (etaA / etaB);
-    Vector3f wh = Normalize(wo + wi * eta);
-    if (wh.z < 0) wh = -wh;
-
-    // Same side?
-    if (Dot(wo, wh) * Dot(wi, wh) > 0) return Spectrum(0);
-
-    Spectrum F = fresnel.Evaluate(Dot(wo, wh));
-
-    Float sqrtDenom = Dot(wo, wh) + eta * Dot(wi, wh);
-    Float factor = (mode == TransportMode::Radiance) ? (1 / eta) : 1;
-
-    return (Spectrum(1.f) - F) * T *
-           std::abs(distribution->D(wh) * distribution->G(wo, wi) * eta * eta *
-                    AbsDot(wi, wh) * AbsDot(wo, wh) * factor * factor /
-                    (cosThetaI * cosThetaO * sqrtDenom * sqrtDenom));
-}
-
-std::string MicrofacetTransmission::ToString() const {
-    return std::string("[ MicrofacetTransmission T: ") + T.ToString() +
-           std::string(" distribution: ") + distribution->ToString() +
-           StringPrintf(" etaA: %f etaB: %f", etaA, etaB) +
-           std::string(" fresnel: ") + fresnel.ToString() +
-           std::string(" mode : ") +
-           (mode == TransportMode::Radiance ? std::string("RADIANCE")
-                                            : std::string("IMPORTANCE")) +
-           std::string(" ]");
-}
-
 bool FourierBSDFTable::GetWeightsAndOffset(Float cosTheta, int *offset,
                                            Float weights[4]) const {
     return CatmullRomWeights(nMu, mu, cosTheta, offset, weights);
@@ -202,35 +164,6 @@ Float MicrofacetReflection::Pdf(const Vector3f &wo, const Vector3f &wi) const {
     if (!SameHemisphere(wo, wi)) return 0;
     Vector3f wh = Normalize(wo + wi);
     return distribution->Pdf(wo, wh) / (4 * Dot(wo, wh));
-}
-
-Spectrum MicrofacetTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
-                                          const Point2f &u, Float *pdf,
-                                          BxDFType *sampledType) const {
-    if (wo.z == 0) return 0.;
-    Vector3f wh = distribution->Sample_wh(wo, u);
-    if (Dot(wo, wh) < 0) return 0.;  // Should be rare
-
-    Float eta = CosTheta(wo) > 0 ? (etaA / etaB) : (etaB / etaA);
-    if (!Refract(wo, (Normal3f)wh, eta, wi)) return 0;
-    *pdf = Pdf(wo, *wi);
-    return f(wo, *wi);
-}
-
-Float MicrofacetTransmission::Pdf(const Vector3f &wo,
-                                  const Vector3f &wi) const {
-    if (SameHemisphere(wo, wi)) return 0;
-    // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
-    Float eta = CosTheta(wo) > 0 ? (etaB / etaA) : (etaA / etaB);
-    Vector3f wh = Normalize(wo + wi * eta);
-
-    if (Dot(wo, wh) * Dot(wi, wh) > 0) return 0;
-
-    // Compute change of variables _dwh\_dwi_ for microfacet transmission
-    Float sqrtDenom = Dot(wo, wh) + eta * Dot(wi, wh);
-    Float dwh_dwi =
-        std::abs((eta * eta * Dot(wi, wh)) / (sqrtDenom * sqrtDenom));
-    return distribution->Pdf(wo, wh) * dwh_dwi;
 }
 
 Spectrum FresnelSpecular::Sample_f(const Vector3f &wo, Vector3f *wi,

@@ -353,34 +353,6 @@ class MicrofacetReflection : public BxDF {
     const Fresnel *fresnel;
 };
 
-class MicrofacetTransmission : public BxDF {
-  public:
-    // MicrofacetTransmission Public Methods
-    MicrofacetTransmission(const Spectrum &T,
-                           MicrofacetDistribution *distribution, Float etaA,
-                           Float etaB, TransportMode mode)
-        : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_GLOSSY)),
-          T(T),
-          distribution(distribution),
-          etaA(etaA),
-          etaB(etaB),
-          fresnel(etaA, etaB),
-          mode(mode) {}
-    Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
-    Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &u,
-                      Float *pdf, BxDFType *sampledType) const;
-    Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
-    std::string ToString() const;
-
-  private:
-    // MicrofacetTransmission Private Data
-    const Spectrum T;
-    const MicrofacetDistribution *distribution;
-    const Float etaA, etaB;
-    const FresnelDielectric fresnel;
-    const TransportMode mode;
-};
-
 // BSDF Inline Method Definitions
 inline int BSDF::NumComponents(BxDFType flags) const {
     int num = 0;
