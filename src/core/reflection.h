@@ -49,8 +49,6 @@ namespace pbrt {
 
 // Reflection Declarations
 Float FrDielectric(Float cosThetaI, Float etaI, Float etaT);
-Spectrum FrConductor(Float cosThetaI, const Spectrum &etaI,
-                     const Spectrum &etaT, const Spectrum &k);
 
 // BSDF Inline Functions
 inline Float CosTheta(const Vector3f &w) { return w.z; }
@@ -280,19 +278,6 @@ inline std::ostream &operator<<(std::ostream &os, const Fresnel &f) {
     os << f.ToString();
     return os;
 }
-
-class FresnelConductor : public Fresnel {
-  public:
-    // FresnelConductor Public Methods
-    Spectrum Evaluate(Float cosThetaI) const;
-    FresnelConductor(const Spectrum &etaI, const Spectrum &etaT,
-                     const Spectrum &k)
-        : etaI(etaI), etaT(etaT), k(k) {}
-    std::string ToString() const;
-
-  private:
-    Spectrum etaI, etaT, k;
-};
 
 class FresnelDielectric : public Fresnel {
   public:
