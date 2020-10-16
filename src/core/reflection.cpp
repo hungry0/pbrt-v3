@@ -166,52 +166,6 @@ Float MicrofacetReflection::Pdf(const Vector3f &wo, const Vector3f &wi) const {
     return distribution->Pdf(wo, wh) / (4 * Dot(wo, wh));
 }
 
-Spectrum FresnelSpecular::Sample_f(const Vector3f &wo, Vector3f *wi,
-                                   const Point2f &u, Float *pdf,
-                                   BxDFType *sampledType) const {
-    Float F = FrDielectric(CosTheta(wo), etaA, etaB);
-    if (u[0] < F) {
-        // Compute specular reflection for _FresnelSpecular_
-
-        // Compute perfect specular reflection direction
-        *wi = Vector3f(-wo.x, -wo.y, wo.z);
-        if (sampledType)
-            *sampledType = BxDFType(BSDF_SPECULAR | BSDF_REFLECTION);
-        *pdf = F;
-        return F * R / AbsCosTheta(*wi);
-    } else {
-        // Compute specular transmission for _FresnelSpecular_
-
-        // Figure out which $\eta$ is incident and which is transmitted
-        bool entering = CosTheta(wo) > 0;
-        Float etaI = entering ? etaA : etaB;
-        Float etaT = entering ? etaB : etaA;
-
-        // Compute ray direction for specular transmission
-        if (!Refract(wo, Faceforward(Normal3f(0, 0, 1), wo), etaI / etaT, wi))
-            return 0;
-        Spectrum ft = T * (1 - F);
-
-        // Account for non-symmetry with transmission to different medium
-        if (mode == TransportMode::Radiance)
-            ft *= (etaI * etaI) / (etaT * etaT);
-        if (sampledType)
-            *sampledType = BxDFType(BSDF_SPECULAR | BSDF_TRANSMISSION);
-        *pdf = 1 - F;
-        return ft / AbsCosTheta(*wi);
-    }
-}
-
-std::string FresnelSpecular::ToString() const {
-    return std::string("[ FresnelSpecular R: ") + R.ToString() +
-           std::string(" T: ") + T.ToString() +
-           StringPrintf(" etaA: %f etaB: %f ", etaA, etaB) +
-           std::string(" mode : ") +
-           (mode == TransportMode::Radiance ? std::string("RADIANCE")
-                                            : std::string("IMPORTANCE")) +
-           std::string(" ]");
-}
-
 Spectrum BxDF::rho(const Vector3f &w, int nSamples, const Point2f *u) const {
     Spectrum r(0.);
     for (int i = 0; i < nSamples; ++i) {
