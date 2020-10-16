@@ -400,24 +400,6 @@ class LambertianReflection : public BxDF {
     const Spectrum R;
 };
 
-class LambertianTransmission : public BxDF {
-  public:
-    // LambertianTransmission Public Methods
-    LambertianTransmission(const Spectrum &T)
-        : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_DIFFUSE)), T(T) {}
-    Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
-    Spectrum rho(const Vector3f &, int, const Point2f *) const { return T; }
-    Spectrum rho(int, const Point2f *, const Point2f *) const { return T; }
-    Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &u,
-                      Float *pdf, BxDFType *sampledType) const;
-    Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
-    std::string ToString() const;
-
-  private:
-    // LambertianTransmission Private Data
-    Spectrum T;
-};
-
 class OrenNayar : public BxDF {
   public:
     // OrenNayar Public Methods
