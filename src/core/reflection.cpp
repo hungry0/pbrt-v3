@@ -193,34 +193,6 @@ std::string MicrofacetTransmission::ToString() const {
            std::string(" ]");
 }
 
-FresnelBlend::FresnelBlend(const Spectrum &Rd, const Spectrum &Rs,
-                           MicrofacetDistribution *distribution)
-    : BxDF(BxDFType(BSDF_REFLECTION | BSDF_GLOSSY)),
-      Rd(Rd),
-      Rs(Rs),
-      distribution(distribution) {}
-Spectrum FresnelBlend::f(const Vector3f &wo, const Vector3f &wi) const {
-    auto pow5 = [](Float v) { return (v * v) * (v * v) * v; };
-    Spectrum diffuse = (28.f / (23.f * Pi)) * Rd * (Spectrum(1.f) - Rs) *
-                       (1 - pow5(1 - .5f * AbsCosTheta(wi))) *
-                       (1 - pow5(1 - .5f * AbsCosTheta(wo)));
-    Vector3f wh = wi + wo;
-    if (wh.x == 0 && wh.y == 0 && wh.z == 0) return Spectrum(0);
-    wh = Normalize(wh);
-    Spectrum specular =
-        distribution->D(wh) /
-        (4 * AbsDot(wi, wh) * std::max(AbsCosTheta(wi), AbsCosTheta(wo))) *
-        SchlickFresnel(Dot(wi, wh));
-    return diffuse + specular;
-}
-
-std::string FresnelBlend::ToString() const {
-    return std::string("[ FresnelBlend Rd: ") + Rd.ToString() +
-           std::string(" Rs: ") + Rs.ToString() +
-           std::string(" distribution: ") + distribution->ToString() +
-           std::string(" ]");
-}
-
 bool FourierBSDFTable::GetWeightsAndOffset(Float cosTheta, int *offset,
                                            Float weights[4]) const {
     return CatmullRomWeights(nMu, mu, cosTheta, offset, weights);
@@ -287,33 +259,6 @@ Float MicrofacetTransmission::Pdf(const Vector3f &wo,
     Float dwh_dwi =
         std::abs((eta * eta * Dot(wi, wh)) / (sqrtDenom * sqrtDenom));
     return distribution->Pdf(wo, wh) * dwh_dwi;
-}
-
-Spectrum FresnelBlend::Sample_f(const Vector3f &wo, Vector3f *wi,
-                                const Point2f &uOrig, Float *pdf,
-                                BxDFType *sampledType) const {
-    Point2f u = uOrig;
-    if (u[0] < .5) {
-        u[0] = std::min(2 * u[0], OneMinusEpsilon);
-        // Cosine-sample the hemisphere, flipping the direction if necessary
-        *wi = CosineSampleHemisphere(u);
-        if (wo.z < 0) wi->z *= -1;
-    } else {
-        u[0] = std::min(2 * (u[0] - .5f), OneMinusEpsilon);
-        // Sample microfacet orientation $\wh$ and reflected direction $\wi$
-        Vector3f wh = distribution->Sample_wh(wo, u);
-        *wi = Reflect(wo, wh);
-        if (!SameHemisphere(wo, *wi)) return Spectrum(0.f);
-    }
-    *pdf = Pdf(wo, *wi);
-    return f(wo, *wi);
-}
-
-Float FresnelBlend::Pdf(const Vector3f &wo, const Vector3f &wi) const {
-    if (!SameHemisphere(wo, wi)) return 0;
-    Vector3f wh = Normalize(wo + wi);
-    Float pdf_wh = distribution->Pdf(wo, wh);
-    return .5f * (AbsCosTheta(wi) * InvPi + pdf_wh / (4 * Dot(wo, wh)));
 }
 
 Spectrum FresnelSpecular::Sample_f(const Vector3f &wo, Vector3f *wi,

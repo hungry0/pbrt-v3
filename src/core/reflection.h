@@ -414,27 +414,6 @@ class MicrofacetTransmission : public BxDF {
     const TransportMode mode;
 };
 
-class FresnelBlend : public BxDF {
-  public:
-    // FresnelBlend Public Methods
-    FresnelBlend(const Spectrum &Rd, const Spectrum &Rs,
-                 MicrofacetDistribution *distrib);
-    Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
-    Spectrum SchlickFresnel(Float cosTheta) const {
-        auto pow5 = [](Float v) { return (v * v) * (v * v) * v; };
-        return Rs + pow5(1 - cosTheta) * (Spectrum(1.) - Rs);
-    }
-    Spectrum Sample_f(const Vector3f &wi, Vector3f *sampled_f, const Point2f &u,
-                      Float *pdf, BxDFType *sampledType) const;
-    Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
-    std::string ToString() const;
-
-  private:
-    // FresnelBlend Private Data
-    const Spectrum Rd, Rs;
-    MicrofacetDistribution *distribution;
-};
-
 // BSDF Inline Method Definitions
 inline int BSDF::NumComponents(BxDFType flags) const {
     int num = 0;
