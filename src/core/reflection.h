@@ -364,25 +364,6 @@ class LambertianReflection : public BxDF {
     const Spectrum R;
 };
 
-class OrenNayar : public BxDF {
-  public:
-    // OrenNayar Public Methods
-    Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
-    OrenNayar(const Spectrum &R, Float sigma)
-        : BxDF(BxDFType(BSDF_REFLECTION | BSDF_DIFFUSE)), R(R) {
-        sigma = Radians(sigma);
-        Float sigma2 = sigma * sigma;
-        A = 1.f - (sigma2 / (2.f * (sigma2 + 0.33f)));
-        B = 0.45f * sigma2 / (sigma2 + 0.09f);
-    }
-    std::string ToString() const;
-
-  private:
-    // OrenNayar Private Data
-    const Spectrum R;
-    Float A, B;
-};
-
 class MicrofacetReflection : public BxDF {
   public:
     // MicrofacetReflection Public Methods
