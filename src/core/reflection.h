@@ -221,7 +221,9 @@ class BxDF {
     // BxDF Interface
     virtual ~BxDF() {}
     BxDF(BxDFType type) : type(type) {}
-    bool MatchesFlags(BxDFType t) const { return (type & t) == type; }
+    bool MatchesFlags(BxDFType t) const{
+		return (type & t) == type;
+	}
     virtual Spectrum f(const Vector3f &wo, const Vector3f &wi) const = 0;
     virtual Spectrum Sample_f(const Vector3f &wo, Vector3f *wi,
                               const Point2f &sample, Float *pdf,

@@ -61,6 +61,7 @@ class Checkerboard2DTexture : public Texture<T> {
           tex1(tex1),
           tex2(tex2),
           aaMethod(aaMethod) {}
+
     T Evaluate(const SurfaceInteraction &si) const {
         Vector2f dstdx, dstdy;
         Point2f st = mapping->Map(si, &dstdx, &dstdy);
