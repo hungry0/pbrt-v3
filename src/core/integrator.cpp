@@ -235,7 +235,7 @@ void SamplerIntegrator::Render(const Scene &scene) {
     const int tileSize = 16;
     Point2i nTiles((sampleExtent.x + tileSize - 1) / tileSize,
                    (sampleExtent.y + tileSize - 1) / tileSize);
-    ProgressReporter reporter(nTiles.x * nTiles.y, "Rendering");
+    ProgressReporter reporter(static_cast<int64_t>(nTiles.x * nTiles.y), "Rendering");
     {
         ParallelFor2D([&](Point2i tile) {
             // Render section of image corresponding to _tile_
