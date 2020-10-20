@@ -5,6 +5,7 @@
 #include "interaction.h"
 #include "spectrum.h"
 #include "reflection.h"
+#include "paramset.h"
 
 namespace pbrt {
 
@@ -24,6 +25,7 @@ void GlassMaterial::ComputeScatteringFunctions(SurfaceInteraction* si,
 
     if (R.IsBlack() && T.IsBlack()) return;
 
+	// 认为绝对的光滑就是Specular.
     bool isSpecular = urough == 0 && vrough == 0;
     if (isSpecular && allowMultipleLobes)
     {
@@ -47,8 +49,8 @@ void GlassMaterial::ComputeScatteringFunctions(SurfaceInteraction* si,
             Fresnel* fresnel = ARENA_ALLOC(arena, FresnelDielectric)(1.f, eta);
             if (isSpecular) 
             {  
-                // si->bsdf->Add(
-                //    ARENA_ALLOC(arena, SpecularReflection)(R, fresnel));
+                 si->bsdf->Add(
+                    ARENA_ALLOC(arena, SpecularReflection)(R, fresnel));
             } 
             else 
             {
@@ -56,16 +58,43 @@ void GlassMaterial::ComputeScatteringFunctions(SurfaceInteraction* si,
             }
         }
 
-        //if (!T.IsBlack())
-        //{
-        //    if (isSpecular)
-        //        si->bsdf->Add(ARENA_ALLOC(arena, SpecularTransmission)(
-        //            T, 1.f, eta, mode));
-        //    else
-        //        si->bsdf->Add(ARENA_ALLOC(arena, MicrofacetTransmission)(
-        //            T, distrib, 1.f, eta, mode));
-        //}
+        if (!T.IsBlack()) {
+            if (isSpecular)
+                si->bsdf->Add(ARENA_ALLOC(arena, SpecularTransmission)(
+                    T, 1.f, eta, mode));
+            else
+                si->bsdf->Add(ARENA_ALLOC(arena, MicrofacetTransmission)(
+                    T, distrib, 1.f, eta, mode));
+        }
     }
+}
+
+GlassMaterial* CreateGlassMaterial(const TextureParams& mp) 
+{
+    std::shared_ptr<Texture<Spectrum>> Kr =
+        mp.GetSpectrumTexture("Kr", Spectrum(1.f));
+
+	std::shared_ptr<Texture<Spectrum>> Kt =
+        mp.GetSpectrumTexture("Kt", Spectrum(1.f));
+
+	std::shared_ptr<Texture<Float>> eta = mp.GetFloatTextureOrNull("eta");
+	if (!eta)
+	{
+        eta = mp.GetFloatTexture("index", 1.5f);
+	}
+
+	std::shared_ptr<Texture<Float>> roughu = mp.GetFloatTexture("uroughness", 0.f);
+    std::shared_ptr<Texture<Float>> roughv = mp.GetFloatTexture("vroughness", 0.f);
+
+	std::shared_ptr<Texture<Float>> bumpMap =
+        mp.GetFloatTextureOrNull("bumpmap");
+
+	bool remapRoughness = mp.FindBool("remaproughness", true);
+
+	return new GlassMaterial(Kr, Kt, roughu, roughv, eta, bumpMap,
+                                 remapRoughness);
+
+
 }
 
 }
