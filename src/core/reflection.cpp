@@ -318,4 +318,47 @@ std::string BSDF::ToString() const {
     return s + std::string(" ]");
 }
 
+Spectrum FresnelSpecular::Sample_f(const Vector3f &wo, Vector3f *wi,
+                                         const Point2f &u, Float *pdf,
+                                         BxDFType *sampledType) const 
+{
+    Float F = FrDielectric(CosTheta(wo), etaA, etaB);
+    if(u[0] < F) 
+    {
+        *wi = Vector3f(-wo.x, -wo.y, wo.z);
+        if (sampledType)
+            *sampledType = BxDFType(BSDF_SPECULAR | BSDF_REFLECTION);
+
+        *pdf = F;
+
+        return F * R / AbsCosTheta(*wi);
+    } 
+    else 
+    {
+        bool entering = CosTheta(wo) > 0;
+        Float etaI = entering ? etaA : etaB;
+        float etaT = entering ? etaB : etaA;
+
+        if (!Refract(wo, Faceforward(Normal3f(0, 0, 1), wo), etaI / etaT, wi))
+        {
+            return 0;
+        }
+
+        Spectrum ft = T * (1 - F);
+
+        if (mode == TransportMode::Radiance)
+            ft *= (etaI * etaI) / (etaT * etaT);
+        if (sampledType)
+            *sampledType = BxDFType(BSDF_SPECULAR | BSDF_TRANSMISSION);
+        *pdf = 1 - F;
+        
+        return ft / AbsCosTheta(*wi);
+    }
+}
+
+std::string FresnelSpecular::ToString() const 
+{ 
+    return "";
+}
+
 }  // namespace pbrt

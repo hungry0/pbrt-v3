@@ -78,11 +78,13 @@ Spectrum WhittedIntegrator::Li(const RayDifferential &ray, const Scene &scene,
         if (!f.IsBlack() && visibility.Unoccluded(scene))
             L += f * Li * AbsDot(wi, n) / pdf;
     }
+
     if (depth + 1 < maxDepth) {
         // Trace rays for specular reflection and refraction
         L += SpecularReflect(ray, isect, scene, sampler, arena, depth);
         L += SpecularTransmit(ray, isect, scene, sampler, arena, depth);
     }
+
     return L;
 }
 
