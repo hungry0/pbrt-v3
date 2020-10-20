@@ -47,6 +47,7 @@
 #include "integrators/whitted.h"
 #include "lights/distant.h"
 #include "materials/plastic.h"
+#include "materials/mirror.h"
 #include "media/grid.h"
 #include "media/homogeneous.h"
 #include "samplers/random.h"
@@ -459,6 +460,8 @@ std::shared_ptr<Material> MakeMaterial(const std::string &name,
         return nullptr;
     else if (name == "plastic")
         material = CreatePlasticMaterial(mp);
+    else if (name == "mirror")
+        material = CreateMirrorMaterial(mp);
     else {
         Warning("Material \"%s\" unknown. Using \"matte\".", name.c_str());
         material = CreatePlasticMaterial(mp);  // CreateMatteMaterial
