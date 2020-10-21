@@ -368,20 +368,16 @@ std::string SpecularReflection::ToString() const {
 }
 
 Spectrum LambertianTransmission::f(const Vector3f &wo,
-                                   const Vector3f &wi) const 
-{
+                                   const Vector3f &wi) const {
     return T * InvPi;
 }
 
-Spectrum LambertianTransmission::Sample_f(const Vector3f &wo,
-                                          Vector3f *wi, const Point2f &u,
-                                          Float *pdf,
-                                          BxDFType *sampledType) const 
-{
+Spectrum LambertianTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
+                                          const Point2f &u, Float *pdf,
+                                          BxDFType *sampledType) const {
     *wi = CosineSampleHemisphere(u);
 
-    if (wo.z > 0)
-    {
+    if (wo.z > 0) {
         wi->z *= -1;
     }
 
@@ -391,36 +387,30 @@ Spectrum LambertianTransmission::Sample_f(const Vector3f &wo,
 }
 
 Float LambertianTransmission::Pdf(const Vector3f &wo,
-                                  const Vector3f &wi) const 
-{
+                                  const Vector3f &wi) const {
     return !SameHemisphere(wo, wi) ? AbsCosTheta(wi) * InvPi : 0;
 }
 
-std::string LambertianTransmission::ToString() const 
-{
+std::string LambertianTransmission::ToString() const {
     return std::string("[ LambertianTransmission T: ") + T.ToString() +
            std::string(" ]");
 }
 
 Spectrum MicrofacetTransmission::f(const Vector3f &wo,
-                                   const Vector3f &wi) const 
-{
-    if (SameHemisphere(wo, wi))
-    {
+                                   const Vector3f &wi) const {
+    if (SameHemisphere(wo, wi)) {
         return Spectrum(0);
     }
 
     Float cosThetaO = CosTheta(wo);
     Float cosThetaI = CosTheta(wi);
-    if (cosThetaI == 0 || cosThetaO == 0)
-    {
+    if (cosThetaI == 0 || cosThetaO == 0) {
         return Spectrum(0);
     }
 
     Float eta = CosTheta(wo) > 0 ? (etaB / etaA) : (etaA / etaB);
     Vector3f wh = Normalize(wo + wi * eta);
-    if (wh.z < 0)
-    {
+    if (wh.z < 0) {
         wh = -wh;
     }
 
@@ -437,22 +427,18 @@ Spectrum MicrofacetTransmission::f(const Vector3f &wo,
 
 Spectrum MicrofacetTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
                                           const Point2f &u, Float *pdf,
-                                          BxDFType *sampledType) const 
-{
-    if (wo.z == 0)
-    {
+                                          BxDFType *sampledType) const {
+    if (wo.z == 0) {
         return Spectrum(0);
     }
 
     Vector3f wh = distribution->Sample_wh(wo, u);
-    if (Dot(wo, wh) < 0)
-    {
+    if (Dot(wo, wh) < 0) {
         return Spectrum(0);
     }
 
     Float eta = CosTheta(wo) > 0 ? (etaA / etaB) : (etaB / etaA);
-    if (!Refract(wo, (Normal3f)wh, eta, wi))
-    {
+    if (!Refract(wo, (Normal3f)wh, eta, wi)) {
         return Spectrum(0);
     }
 
@@ -462,10 +448,8 @@ Spectrum MicrofacetTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
 }
 
 Float MicrofacetTransmission::Pdf(const Vector3f &wo,
-                                  const Vector3f &wi) const 
-{
-    if (SameHemisphere(wo, wi))
-    {
+                                  const Vector3f &wi) const {
+    if (SameHemisphere(wo, wi)) {
         return 0;
     }
 
@@ -479,11 +463,44 @@ Float MicrofacetTransmission::Pdf(const Vector3f &wo,
     return distribution->Pdf(wo, wh) * dwh_dwi;
 }
 
-std::string MicrofacetTransmission::ToString() const 
-{
+std::string MicrofacetTransmission::ToString() const {
     return std::string("[ MicrofacetTransmission T: ") + T.ToString() +
            std::string(" distribution: ") + distribution->ToString() +
            StringPrintf(" etaA: %f etaB: %f", etaA, etaB) +
+           std::string(" fresnel: ") + fresnel.ToString() +
+           std::string(" mode : ") +
+           (mode == TransportMode::Radiance ? std::string("RADIANCE")
+                                            : std::string("IMPORTANCE")) +
+           std::string(" ]");
+}
+
+pbrt::Spectrum SpecularTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
+                                              const Point2f &sample, Float *pdf,
+                                              BxDFType *sampledType) const {
+    bool entering = CosTheta(wo) > 0;
+    Float etaI = entering ? etaA : etaB;
+    Float etaT = entering ? etaB : etaA;
+
+	if (!Refract(wo, Faceforward(Normal3f(0,0,1), wo), etaI / etaT, wi))
+	{
+        return 0;
+	}
+
+	*pdf = 1;
+    Spectrum ft = T * (Spectrum(1.f) - fresnel.Evaluate(CosTheta(*wi)));
+
+	if (mode == TransportMode::Radiance)
+	{
+        ft *= (etaI * etaI) / (etaT * etaT);
+	}
+
+	return ft / AbsCosTheta(*wi);
+}
+
+std::string SpecularTransmission::ToString() const 
+{
+    return std::string("[ SpecularTransmission: T: ") + T.ToString() +
+           StringPrintf(" etaA: %f etaB: %f ", etaA, etaB) +
            std::string(" fresnel: ") + fresnel.ToString() +
            std::string(" mode : ") +
            (mode == TransportMode::Radiance ? std::string("RADIANCE")

@@ -65,7 +65,6 @@ void TranslucentMaterial::ComputeScatteringFunctions(
                 t * ks, distrib, 1.f, eta, mode));
         }
     }
-
 }
 
 TranslucentMaterial* CreateTranslucentMaterial(const TextureParams& mp) 

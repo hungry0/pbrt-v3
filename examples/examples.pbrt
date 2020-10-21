@@ -16,10 +16,10 @@ WorldBegin
 
 # approximate the sun
  LightSource "distant"  "point from" [ -30 40  100 ]
-   "blackbody L" [3000 1.5]
+   "blackbody L" [5000 5]
 
 AttributeBegin
-  Material "translucent" 
+  Material "plastic" "color Ks" [1 1 1] "float roughness" [0.0]
   Shape "sphere" "float radius" 1
 AttributeEnd
 
