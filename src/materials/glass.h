@@ -5,7 +5,8 @@
 
 namespace pbrt {
 
-class GlassMaterial : public Material {
+class GlassMaterial : public Material 
+{
   public:
     GlassMaterial(const std::shared_ptr<Texture<Spectrum>> &Kr,
                   const std::shared_ptr<Texture<Spectrum>> &Kt,
@@ -34,5 +35,7 @@ class GlassMaterial : public Material {
     std::shared_ptr<Texture<Float>> bumpMap;
     bool remapRoughness;
 };
+
+GlassMaterial *CreateGlassMaterial(const TextureParams &mp);
 
 }

@@ -32,14 +32,14 @@
 
 // core/reflection.cpp*
 #include "reflection.h"
-#include "spectrum.h"
+#include <stdarg.h>
+#include "interaction.h"
+#include "interpolation.h"
 #include "sampler.h"
 #include "sampling.h"
-#include "interpolation.h"
 #include "scene.h"
-#include "interaction.h"
+#include "spectrum.h"
 #include "stats.h"
-#include <stdarg.h>
 
 namespace pbrt {
 
@@ -116,7 +116,7 @@ Spectrum MicrofacetReflection::f(const Vector3f &wo, const Vector3f &wi) const {
     wh = Normalize(wh);
     // For the Fresnel call, make sure that wh is in the same hemisphere
     // as the surface normal, so that TIR is handled correctly.
-    Spectrum F = fresnel->Evaluate(Dot(wi, Faceforward(wh, Vector3f(0,0,1))));
+    Spectrum F = fresnel->Evaluate(Dot(wi, Faceforward(wh, Vector3f(0, 0, 1))));
     return R * distribution->D(wh) * distribution->G(wo, wi) * F /
            (4 * cosThetaI * cosThetaO);
 }
@@ -151,7 +151,7 @@ Spectrum MicrofacetReflection::Sample_f(const Vector3f &wo, Vector3f *wi,
     // Sample microfacet orientation $\wh$ and reflected direction $\wi$
     if (wo.z == 0) return 0.;
     Vector3f wh = distribution->Sample_wh(wo, u);
-    if (Dot(wo, wh) < 0) return 0.;   // Should be rare
+    if (Dot(wo, wh) < 0) return 0.;  // Should be rare
     *wi = Reflect(wo, wh);
     if (!SameHemisphere(wo, *wi)) return Spectrum(0.f);
 
@@ -217,8 +217,8 @@ Spectrum BSDF::rho(int nSamples, const Point2f *samples1,
     return ret;
 }
 
-Spectrum BSDF::rho(const Vector3f &woWorld, int nSamples, const Point2f *samples,
-                   BxDFType flags) const {
+Spectrum BSDF::rho(const Vector3f &woWorld, int nSamples,
+                   const Point2f *samples, BxDFType flags) const {
     Vector3f wo = WorldToLocal(woWorld);
     Spectrum ret(0.f);
     for (int i = 0; i < nBxDFs; ++i)
@@ -250,8 +250,9 @@ Spectrum BSDF::Sample_f(const Vector3f &woWorld, Vector3f *wiWorld,
             break;
         }
     CHECK(bxdf != nullptr);
-    VLOG(2) << "BSDF::Sample_f chose comp = " << comp << " / matching = " <<
-        matchingComps << ", bxdf: " << bxdf->ToString();
+    VLOG(2) << "BSDF::Sample_f chose comp = " << comp
+            << " / matching = " << matchingComps
+            << ", bxdf: " << bxdf->ToString();
 
     // Remap _BxDF_ sample _u_ to $[0,1)^2$
     Point2f uRemapped(std::min(u[0] * matchingComps - comp, OneMinusEpsilon),
@@ -263,8 +264,8 @@ Spectrum BSDF::Sample_f(const Vector3f &woWorld, Vector3f *wiWorld,
     *pdf = 0;
     if (sampledType) *sampledType = bxdf->type;
     Spectrum f = bxdf->Sample_f(wo, &wi, uRemapped, pdf, sampledType);
-    VLOG(2) << "For wo = " << wo << ", sampled f = " << f << ", pdf = "
-            << *pdf << ", ratio = " << ((*pdf > 0) ? (f / *pdf) : Spectrum(0.))
+    VLOG(2) << "For wo = " << wo << ", sampled f = " << f << ", pdf = " << *pdf
+            << ", ratio = " << ((*pdf > 0) ? (f / *pdf) : Spectrum(0.))
             << ", wi = " << wi;
     if (*pdf == 0) {
         if (sampledType) *sampledType = BxDFType(0);
@@ -289,8 +290,8 @@ Spectrum BSDF::Sample_f(const Vector3f &woWorld, Vector3f *wiWorld,
                  (!reflect && (bxdfs[i]->type & BSDF_TRANSMISSION))))
                 f += bxdfs[i]->f(wo, wi);
     }
-    VLOG(2) << "Overall f = " << f << ", pdf = " << *pdf << ", ratio = "
-            << ((*pdf > 0) ? (f / *pdf) : Spectrum(0.));
+    VLOG(2) << "Overall f = " << f << ", pdf = " << *pdf
+            << ", ratio = " << ((*pdf > 0) ? (f / *pdf) : Spectrum(0.));
     return f;
 }
 
@@ -319,12 +320,10 @@ std::string BSDF::ToString() const {
 }
 
 Spectrum FresnelSpecular::Sample_f(const Vector3f &wo, Vector3f *wi,
-                                         const Point2f &u, Float *pdf,
-                                         BxDFType *sampledType) const 
-{
+                                   const Point2f &u, Float *pdf,
+                                   BxDFType *sampledType) const {
     Float F = FrDielectric(CosTheta(wo), etaA, etaB);
-    if(u[0] < F) 
-    {
+    if (u[0] < F) {
         *wi = Vector3f(-wo.x, -wo.y, wo.z);
         if (sampledType)
             *sampledType = BxDFType(BSDF_SPECULAR | BSDF_REFLECTION);
@@ -332,15 +331,12 @@ Spectrum FresnelSpecular::Sample_f(const Vector3f &wo, Vector3f *wi,
         *pdf = F;
 
         return F * R / AbsCosTheta(*wi);
-    } 
-    else 
-    {
+    } else {
         bool entering = CosTheta(wo) > 0;
         Float etaI = entering ? etaA : etaB;
         float etaT = entering ? etaB : etaA;
 
-        if (!Refract(wo, Faceforward(Normal3f(0, 0, 1), wo), etaI / etaT, wi))
-        {
+        if (!Refract(wo, Faceforward(Normal3f(0, 0, 1), wo), etaI / etaT, wi)) {
             return 0;
         }
 
@@ -351,27 +347,22 @@ Spectrum FresnelSpecular::Sample_f(const Vector3f &wo, Vector3f *wi,
         if (sampledType)
             *sampledType = BxDFType(BSDF_SPECULAR | BSDF_TRANSMISSION);
         *pdf = 1 - F;
-        
+
         return ft / AbsCosTheta(*wi);
     }
 }
 
-std::string FresnelSpecular::ToString() const 
-{ 
-    return "";
-}
+std::string FresnelSpecular::ToString() const { return ""; }
 
 Spectrum SpecularReflection::Sample_f(const Vector3f &wo, Vector3f *wi,
-                                            const Point2f &sample, Float *pdf,
-                                            BxDFType *sampledType) const 
-{
+                                      const Point2f &sample, Float *pdf,
+                                      BxDFType *sampledType) const {
     *wi = Vector3f(-wo.x, -wo.y, wo.z);
     *pdf = 1;
     return fresnel->Evaluate(CosTheta(*wi)) * R / AbsCosTheta(*wi);
 }
 
-std::string SpecularReflection::ToString() const 
-{
+std::string SpecularReflection::ToString() const {
     return std::string("[ SpecularReflection R: ") + R.ToString() +
            std::string(" fresnel: ") + fresnel->ToString() + std::string(" ]");
 }
