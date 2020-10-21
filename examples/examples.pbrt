@@ -19,7 +19,7 @@ WorldBegin
    "blackbody L" [3000 1.5]
 
 AttributeBegin
-  Material "mirror" 
+  Material "translucent" 
   Shape "sphere" "float radius" 1
 AttributeEnd
 
