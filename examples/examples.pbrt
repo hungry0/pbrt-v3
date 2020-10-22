@@ -19,7 +19,9 @@ WorldBegin
    "blackbody L" [5000 5]
 
 AttributeBegin
-  Material "plastic" "color Ks" [1 1 1] "float roughness" [0.0]
+Material "metal" "float roughness" [.8]
+    "spectrum eta" "spds/Au.eta.spd"
+    "spectrum k" "spds/Au.k.spd"
   Shape "sphere" "float radius" 1
 AttributeEnd
 

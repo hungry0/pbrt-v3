@@ -50,6 +50,10 @@ namespace pbrt {
 // Reflection Declarations
 Float FrDielectric(Float cosThetaI, Float etaI, Float etaT);
 
+Spectrum FrConductor(Float cosThetaI, const Spectrum &etaI,
+                     const Spectrum &etaT, const Spectrum &k);
+
+
 // BSDF Inline Functions
 inline Float CosTheta(const Vector3f &w) { return w.z; }
 inline Float Cos2Theta(const Vector3f &w) { return w.z * w.z; }
@@ -287,6 +291,19 @@ class FresnelDielectric : public Fresnel {
 
   private:
     Float etaI, etaT;
+};
+
+class FresnelConductor : public Fresnel 
+{
+  public:
+    Spectrum Evaluate(Float cosThetaI) const;
+    FresnelConductor(const Spectrum &etaI, const Spectrum& etaT,
+                     const Spectrum &k)
+        : etaI(etaI), etaT(etaT), k(k) {}
+    std::string ToString() const;
+
+  private:
+    Spectrum etaI, etaT, k;
 };
 
 class FresnelNoOp : public Fresnel {

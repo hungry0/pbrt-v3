@@ -1,8 +1,11 @@
 #pragma once
 #include "material.h"
 
-namespace pbrt {
-class MetalMaterial : public Material {
+namespace pbrt 
+{
+
+class MetalMaterial : public Material 
+{
   public:
     MetalMaterial(const std::shared_ptr<Texture<Spectrum>>& eta,
                   const std::shared_ptr<Texture<Spectrum>>& k,
@@ -29,5 +32,7 @@ class MetalMaterial : public Material {
     std::shared_ptr<Texture<Float>> bumpMap;
     bool remapRoughness;
 };
+
+MetalMaterial* CreateMetalMaterial(const TextureParams& mp);
 
 }  // namespace pbrt
