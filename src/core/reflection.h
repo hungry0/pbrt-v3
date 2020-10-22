@@ -293,6 +293,7 @@ class FresnelDielectric : public Fresnel {
     Float etaI, etaT;
 };
 
+// k是吸收系数
 class FresnelConductor : public Fresnel 
 {
   public:
