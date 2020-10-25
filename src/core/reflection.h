@@ -53,7 +53,6 @@ Float FrDielectric(Float cosThetaI, Float etaI, Float etaT);
 Spectrum FrConductor(Float cosThetaI, const Spectrum &etaI,
                      const Spectrum &etaT, const Spectrum &k);
 
-
 // BSDF Inline Functions
 inline Float CosTheta(const Vector3f &w) { return w.z; }
 inline Float Cos2Theta(const Vector3f &w) { return w.z * w.z; }
@@ -294,11 +293,10 @@ class FresnelDielectric : public Fresnel {
 };
 
 // k是吸收系数
-class FresnelConductor : public Fresnel 
-{
+class FresnelConductor : public Fresnel {
   public:
     Spectrum Evaluate(Float cosThetaI) const;
-    FresnelConductor(const Spectrum &etaI, const Spectrum& etaT,
+    FresnelConductor(const Spectrum &etaI, const Spectrum &etaT,
                      const Spectrum &k)
         : etaI(etaI), etaT(etaT), k(k) {}
     std::string ToString() const;
@@ -378,14 +376,14 @@ class MicrofacetTransmission : public BxDF {
           fresnel(etaA, etaB),
           mode(mode) {}
 
-	Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
+    Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
 
     Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &u,
                       Float *pdf, BxDFType *sampledType /* = nullptr */) const;
 
-	Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
+    Float Pdf(const Vector3f &wo, const Vector3f &wi) const;
 
-	std::string ToString() const;
+    std::string ToString() const;
 
   private:
     const Spectrum T;
@@ -438,24 +436,19 @@ class LambertianReflection : public BxDF {
     const Spectrum R;
 };
 
-class LambertianTransmission : public BxDF 
-{
+class LambertianTransmission : public BxDF {
   public:
     LambertianTransmission(const Spectrum &T)
-        : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_DIFFUSE)),T(T) {}
+        : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_DIFFUSE)), T(T) {}
 
     Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
 
     Spectrum rho(int nSamples, const Point2f *samples1,
-                 const Point2f *samples2) const 
-    {
+                 const Point2f *samples2) const {
         return T;
     }
-    
-    Spectrum rho(const Vector3f&, int, const Point2f*) const
-    { 
-        return T;
-    }
+
+    Spectrum rho(const Vector3f &, int, const Point2f *) const { return T; }
 
     Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &u,
                       Float *pdf, BxDFType *sampledType) const;
@@ -464,8 +457,27 @@ class LambertianTransmission : public BxDF
 
     std::string ToString() const;
 
-    private:
+  private:
     Spectrum T;
+};
+
+class OrenNayar : public BxDF {
+  public:
+    Spectrum f(const Vector3f &wo, const Vector3f &wi) const;
+    OrenNayar(const Spectrum &R, Float sigma)
+        : BxDF(BxDFType(BSDF_REFLECTION | BSDF_DIFFUSE)), R(R) 
+	{
+        sigma = Radians(sigma);
+        Float sigma2 = sigma * sigma;
+        A = 1.0f - (sigma2 / (2.0f * (sigma2 + 0.33f)));
+        B = 0.45f * sigma2 / (sigma2 + 0.09f);
+	}
+
+	std::string ToString() const;
+
+  private:
+    const Spectrum R;
+    Float A, B;
 };
 
 class MicrofacetReflection : public BxDF {

@@ -68,8 +68,7 @@ Float FrDielectric(Float cosThetaI, Float etaI, Float etaT) {
 }
 
 pbrt::Spectrum FrConductor(Float cosThetaI, const Spectrum &etaI,
-                           const Spectrum &etaT, const Spectrum &k) 
-{
+                           const Spectrum &etaT, const Spectrum &k) {
     cosThetaI = Clamp(cosThetaI, -1, 1);
     Spectrum eta = etaT / etaI;
     Spectrum etak = k / etaI;
@@ -507,24 +506,21 @@ pbrt::Spectrum SpecularTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
     Float etaI = entering ? etaA : etaB;
     Float etaT = entering ? etaB : etaA;
 
-	if (!Refract(wo, Faceforward(Normal3f(0,0,1), wo), etaI / etaT, wi))
-	{
+    if (!Refract(wo, Faceforward(Normal3f(0, 0, 1), wo), etaI / etaT, wi)) {
         return 0;
-	}
+    }
 
-	*pdf = 1;
+    *pdf = 1;
     Spectrum ft = T * (Spectrum(1.f) - fresnel.Evaluate(CosTheta(*wi)));
 
-	if (mode == TransportMode::Radiance)
-	{
+    if (mode == TransportMode::Radiance) {
         ft *= (etaI * etaI) / (etaT * etaT);
-	}
+    }
 
-	return ft / AbsCosTheta(*wi);
+    return ft / AbsCosTheta(*wi);
 }
 
-std::string SpecularTransmission::ToString() const 
-{
+std::string SpecularTransmission::ToString() const {
     return std::string("[ SpecularTransmission: T: ") + T.ToString() +
            StringPrintf(" etaA: %f etaB: %f ", etaA, etaB) +
            std::string(" fresnel: ") + fresnel.ToString() +
@@ -534,16 +530,49 @@ std::string SpecularTransmission::ToString() const
            std::string(" ]");
 }
 
-Spectrum FresnelConductor::Evaluate(Float cosThetaI) const 
-{
+Spectrum FresnelConductor::Evaluate(Float cosThetaI) const {
     return FrConductor(std::abs(cosThetaI), etaI, etaT, k);
 }
 
-std::string FresnelConductor::ToString() const 
-{
+std::string FresnelConductor::ToString() const {
     return std::string("[ FresnelConductor etaI: ") + etaI.ToString() +
            std::string(" etaT: ") + etaT.ToString() + std::string(" k: ") +
            k.ToString() + std::string(" ]");
+}
+
+Spectrum OrenNayar::f(const Vector3f &wo, const Vector3f &wi) const {
+    Float sinThetaI = SinTheta(wi);
+    Float sinThetaO = SinTheta(wo);
+
+    Float maxCos = 0;
+    if (sinThetaI > 1e-4 && sinThetaO > 1e-4) {
+        Float sinPhiI = SinPhi(wi);
+        Float cosPhI = CosPhi(wo);
+        Float sinPhiO = SinPhi(wo);
+        Float cosPhiO = CosPhi(wo);
+
+        Float dCos = cosPhI * cosPhiO + sinPhiI * sinPhiO;
+        maxCos = std::max((Float)0, dCos);
+    }
+
+    Float sinAlpha, tanBeta;
+    if (AbsCosTheta(wi) > AbsCosTheta(wo)) 
+	{
+        sinAlpha = sinThetaO;
+        tanBeta = sinThetaI / AbsCosTheta(wi);
+	}
+	else
+	{
+        sinAlpha = sinThetaI;
+        tanBeta = sinThetaO / AbsCosTheta(wo);
+	}
+
+	return R * InvPi * (A + B * maxCos * sinAlpha * tanBeta);
+}
+
+std::string OrenNayar::ToString() const {
+    return std::string("[ OrenNayar R: ") + R.ToString() +
+           StringPrintf(" A: %f B: %f ]", A, B);
 }
 
 }  // namespace pbrt

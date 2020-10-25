@@ -19,9 +19,7 @@ WorldBegin
    "blackbody L" [5000 5]
 
 AttributeBegin
-Material "metal" "float roughness" [.8]
-    "spectrum eta" "spds/Au.eta.spd"
-    "spectrum k" "spds/Au.k.spd"
+Material "matte"
   Shape "sphere" "float radius" 1
 AttributeEnd
 

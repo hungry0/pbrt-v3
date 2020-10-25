@@ -51,6 +51,7 @@
 #include "materials/translucent.h"
 #include "materials/glass.h"
 #include "materials/metal.h"
+#include "materials/matte.h"
 #include "media/grid.h"
 #include "media/homogeneous.h"
 #include "samplers/random.h"
@@ -469,6 +470,8 @@ std::shared_ptr<Material> MakeMaterial(const std::string &name,
         material = CreateGlassMaterial(mp);
     else if (name == "metal")
         material = CreateMetalMaterial(mp);
+    else if (name == "matte")
+        material = CreateMatteMaterial(mp);
     else if (name == "translucent")
         material = CreateTranslucentMaterial(mp);
     else {
